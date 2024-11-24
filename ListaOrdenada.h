@@ -3,6 +3,7 @@
 #define LISTA_SEQUENCIAL_ORDENADA_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #define MAX 50
 #define ERRO -1
 #define bool int
@@ -22,10 +23,10 @@ typedef struct {
 } LISTA;
 
 // Declaração das funções
-void inicializarLista(LISTA* l);
+void inicializarLista(LISTA* l, int tamanho);
 void exibirLista(LISTA* l);
 int tamanho(LISTA* l);
-int tamanhoEmBytes(LISTA* l);
+int tamanhoEmBytes(LISTA* l, int max);
 TIPOCHAVE primeiroElem(LISTA* l);
 TIPOCHAVE ultimoElem(LISTA* l);
 TIPOCHAVE enesimoElem(LISTA* l, int n);
@@ -34,9 +35,9 @@ int buscaSequencial(LISTA* l, TIPOCHAVE ch);
 int buscaSentinela(LISTA* l, TIPOCHAVE ch);
 int buscaSentinelaOrdenada(LISTA* l, TIPOCHAVE ch);
 int buscaBinaria(LISTA* l, TIPOCHAVE ch);
-bool excluirElemLista(LISTA* l, TIPOCHAVE ch);
-bool excluirElemListaOrd(LISTA* l, TIPOCHAVE ch);
-bool inserirElemListaOrd(LISTA* l, REGISTRO reg);
-bool inserirElemListaOrdSemDup(LISTA* l, REGISTRO reg);
+bool excluirElemLista(LISTA* l, TIPOCHAVE ch, int *max);
+bool excluirElemListaOrd(LISTA* l, TIPOCHAVE ch, int *max);
+bool inserirElemListaOrd(LISTA* l, REGISTRO reg, int *max);
+bool inserirElemListaOrdSemDup(LISTA* l, REGISTRO reg, int* max);
 
 #endif // LISTA_SEQUENCIAL_ORDENADA_H

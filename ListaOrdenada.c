@@ -1,5 +1,6 @@
 // ListaOrdenada.c
 #include "ListaOrdenada.h"
+#include <stdlib.h>
 
 
 /* Inicialização da lista sequencial (a lista já está criada e é apontada pelo endereço em l) */
@@ -23,13 +24,12 @@ int tamanho(LISTA* l) {
   return l->nroElem;
 } /* tamanho */
 
-/* Retornar o tamanho em bytes da lista. Neste caso, isto nao depende do numero
-   de elementos que estao sendo usados, pois a alocacao de memoria eh estatica.
-   A priori, nao precisariamos do ponteiro para a lista, vamos utiliza-lo apenas
-   porque teremos as mesmas funcoes para listas ligadas.   
+/* Retornar o tamanho em bytes da lista. Foi necessária a mudança nessa função para mostrar
+  o tamanho alocado pelo arranjo completo de registros, mas sem contar o espaço alocado para a int
+  nroElem.   
 */
-int tamanhoEmBytes(LISTA* l) {
-  return sizeof(LISTA);
+int tamanhoEmBytes(LISTA* l, int max) {
+  return max * sizeof(l->A);
 } /* tamanhoEmBytes */
 
 /* Retornar a chave do primeiro elemento da lista sequencial (caso haja) e ERRO
@@ -75,7 +75,7 @@ int buscaSentinela(LISTA* l, TIPOCHAVE ch) {
   int i = 0;
   l->A[l->nroElem].chave = ch; // sentinela
   while(l->A[i].chave != ch) i++;
-  if (i > l->nroElem -1) return ERRO; // não achou
+  if (i > l->nroElem -1) return ERRO; // não achou, só saiu do loop com o sentinela.
   else return i;
 } /* buscaSentinela */
 
@@ -85,7 +85,7 @@ int buscaSentinelaOrdenada(LISTA* l, TIPOCHAVE ch) {
   int i = 0;
   l->A[l->nroElem].chave = ch; // sentinela
   while(l->A[i].chave < ch) i++;
-  if (i == l->nroElem || l->A[i].chave != ch) return ERRO; // não achou
+  if (i == l->nroElem || l->A[i].chave != ch) return ERRO; // não achou. Aqui o sinal de diferente pode ser de maior?
   else return i;
 } /* buscaSentinela */
 
@@ -107,7 +107,11 @@ int buscaBinaria(LISTA* l, TIPOCHAVE ch){
 
 
 /* Exclusão do elemento cuja chave seja igual a ch */
-bool excluirElemLista(LISTA* l, TIPOCHAVE ch) { 
+bool excluirElemLista(LISTA* l, TIPOCHAVE ch, int *max) { 
+  if (l->nroElem <= (*max)/4){
+    l->A = realloc(l->A, (*max)/2 * sizeof(REGISTRO));
+    *max /= 2;
+  }
   int pos, j;
   pos = buscaSequencial(l,ch);
   if(pos == ERRO) return false; // não existe
@@ -118,7 +122,11 @@ bool excluirElemLista(LISTA* l, TIPOCHAVE ch) {
 
 
 /* Exclusão do elemento cuja chave seja igual a ch em lista ordenada*/
-bool excluirElemListaOrd(LISTA* l, TIPOCHAVE ch) { 
+bool excluirElemListaOrd(LISTA* l, TIPOCHAVE ch, int *max) { 
+  if (l->nroElem <= (*max)/4){
+    l->A = realloc(l->A, (*max)/2 * sizeof(REGISTRO));
+    *max /= 2;
+  }
   int pos, j;
   pos = buscaBinaria(l,ch);
   if(pos == ERRO) return false; // não existe
@@ -129,8 +137,11 @@ bool excluirElemListaOrd(LISTA* l, TIPOCHAVE ch) {
 
 
 /* Inserção em lista ordenada usando busca binária permitindo duplicação */
-bool inserirElemListaOrd(LISTA* l, REGISTRO reg) {
-  if(l->nroElem >= MAX) return false; // lista cheia
+bool inserirElemListaOrd(LISTA* l, REGISTRO reg, int *max) {
+  if(l->nroElem >= *max) {
+    l->A = realloc(l->A, 2* (*max) * sizeof(REGISTRO));
+    *max *= 2;
+  }
   int pos = l->nroElem;
   while(pos > 0 && l->A[pos-1].chave > reg.chave) {
     l->A[pos] = l->A[pos-1];
@@ -144,17 +155,20 @@ bool inserirElemListaOrd(LISTA* l, REGISTRO reg) {
 
 
 /* Inserção em lista ordenada usando busca binária sem duplicação */
-bool inserirElemListaOrdSemDup(LISTA* l, REGISTRO reg) {
-  if(l->nroElem >= MAX) return false; // lista cheia
+bool inserirElemListaOrdSemDup(LISTA* l, REGISTRO reg, int *max) {
+  if(l->nroElem >= *max) {
+    l->A = realloc(l->A, 2* (*max) * sizeof(REGISTRO));
+    *max *= 2;
+  }
   int pos;
   pos = buscaBinaria(l,reg.chave);
   if(pos != ERRO) return false; // elemento já existe
-  pos = l->nroElem-1;
-  while(pos>0 && l->A[pos].chave > reg.chave) {
-    l->A[pos+1] = l->A[pos];
+  pos = l->nroElem;
+  while(pos>0 && l->A[pos-1].chave > reg.chave) {
+    l->A[pos] = l->A[pos-1];
     pos--;
   }
-  l->A[pos+1] = reg;
+  l->A[pos] = reg;
   l->nroElem++;
   return true;
 } /* inserirElemListaOrd */
